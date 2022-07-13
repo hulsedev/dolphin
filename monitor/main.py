@@ -28,8 +28,6 @@ else:
     with open(UUID_FILEPATH, "r") as f:
         MACHINE_ID = f.read()
 
-print(MACHINE_ID)
-
 
 def transform_to_dict(namedtuple):
     return {k: v for k, v in zip(namedtuple._fields, namedtuple)}
