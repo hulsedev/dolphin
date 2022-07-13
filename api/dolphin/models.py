@@ -1,9 +1,34 @@
-from platform import win32_edition, win32_is_iot
 import uuid
 
 from django.db import models
 
-from dolphin.main import DOLPHIN_VERSION
+
+class Machine(models.Model):
+    machine_id = models.UUIDField(primary_key=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    architecture_bits = models.CharField(max_length=64)
+    architecture_linkage = models.CharField(max_length=64)
+    machine = models.CharField(max_length=128)
+    platform = models.CharField(max_length=128)
+    node = models.CharField(max_length=256)
+    processor = models.CharField(max_length=256)
+    system = models.CharField(max_length=256)
+    system_version = models.CharField(max_length=256)
+    system_release = models.CharField(max_length=256)
+    win32_edition = models.CharField(max_length=256)
+    win32_is_iot = models.BooleanField()
+    win32_ver_release = models.CharField(max_length=256)
+    win32_ver_version = models.CharField(max_length=256)
+    win32_ver_csd = models.CharField(max_length=256)
+    win32_ver_ptype = models.CharField(max_length=256)
+    release = models.CharField(max_length=256)
+    versioninfo = models.JSONField()
+    libc_lib = models.CharField(max_length=256)
+    libc_version = models.CharField(max_length=256)
+
+    def __str__(self):
+        return self.machine_id
 
 
 class Log(models.Model):
@@ -15,7 +40,6 @@ class Log(models.Model):
     # general & complex data fields
     dolphin_version = models.CharField(max_length=10)
     date_measured = models.DateTimeField()
-    machine_id = models.UUIDField()
     boot_time = models.FloatField()
     cpu_times = models.JSONField()
     cpu_percent_global = models.FloatField()
@@ -30,25 +54,7 @@ class Log(models.Model):
     network_io_counters_per_nic = models.JSONField()
 
     # platform data fields
-    architecture_bits = models.CharField()
-    architecture_linkage = models.CharField()
-    machine = models.CharField()
-    platform = models.CharField()
-    node = models.CharField()
-    processor = models.CharField()
-    system = models.CharField()
-    system_version = models.CharField()
-    system_release = models.CharField()
-    win32_edition = models.CharField()
-    win32_is_iot = models.BooleanField()
-    win32_ver_release = models.CharField()
-    win32_ver_version = models.CharField()
-    win32_ver_csd = models.CharField()
-    win32_ver_ptype = models.CharField()
-    release = models.CharField()
-    versioninfo = models.JSONField()
-    libc_lib = models.CharField()
-    libc_version = models.CharField()
+    machine = models.ForeignKey(Machine, on_delete=models.CASCADE, related_name="logs")
 
     # cpu times data fields
     cpu_times_user = models.FloatField()
@@ -121,9 +127,11 @@ class Log(models.Model):
     sensors_battery_percent = models.FloatField(null=True, default=None)
     sensors_battery_secsleft = models.FloatField(null=True, default=None)
     sensors_battery_power_plugged = models.BooleanField(null=True, default=None)
+    sensors_temperatures = models.JSONField(null=True, default=None)
+    sensors_fans = models.JSONField(null=True, default=None)
 
     def __str__(self):
-        return self.machine_id
+        return self.date_measured
 
     class Meta:
-        ordering = ["created"]
+        ordering = ["date_created"]
