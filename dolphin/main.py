@@ -15,6 +15,7 @@ SLEEP_PERIOD = 10
 UUID_DIRPATH = Path(user_data_dir("Dolphin", "Hulse"))
 UUID_FILENAME = ".uuid"
 UUID_FILEPATH = UUID_DIRPATH / UUID_FILENAME
+DOLPHIN_VERSION = "0.0.1"
 
 if not UUID_DIRPATH.is_dir():
     UUID_DIRPATH.mkdir(parents=True, exist_ok=True)
@@ -44,7 +45,8 @@ generate_idx = lambda x: {idx: v for idx, v in enumerate(x)}
 
 def get_telemetry():
     telemetry_data = {
-        "measurement_time": str(datetime.now()),
+        "dolphin_version": DOLPHIN_VERSION,
+        "date_measured": str(datetime.now()),
         "machine_id": MACHINE_ID,
         "boot_time": psutil.boot_time(),
         "cpu_times": transform(psutil.cpu_times(percpu=True)),
@@ -90,12 +92,15 @@ def get_telemetry():
     telemetry_data.update(cpu_times_dict)
 
     cpu_times_percent = psutil.cpu_times_percent()
+    cpu_times_percent_keys = [
+        k.replace("times", "times_percent") for k in cpu_times_keys
+    ]
     cpu_times_percent_dict = {
         k: v
         for k, v in zip(
             [
                 k
-                for k in cpu_times_keys
+                for k in cpu_times_percent_keys
                 if k.split("_")[-1] in cpu_times_percent._fields
             ],
             cpu_times_percent,
@@ -113,15 +118,26 @@ def get_telemetry():
     cpu_stats_dict = {k: v for k, v in zip(cpu_stats_keys, cpu_stats)}
     telemetry_data.update(cpu_stats_dict)
 
-    cpu_freq_keys = ["cpu_freq_current", "cpu_freq_min", "cpu_freq_max"]
-    cpu_freq = psutil.cpu_freq()
-    cpu_freq_dict = {k: v for k, v in zip(cpu_freq_keys, cpu_freq)}
-    telemetry_data.update(cpu_freq_dict)
+    if (
+        psutil.LINUX
+        or psutil.MACOS
+        or psutil.WINDOWS
+        or psutil.FREEBSD
+        or psutil.OPENBSD
+    ):
+        cpu_freq_keys = ["cpu_freq_current", "cpu_freq_min", "cpu_freq_max"]
+        cpu_freq = psutil.cpu_freq()
+        cpu_freq_dict = {k: v for k, v in zip(cpu_freq_keys, cpu_freq)}
+        telemetry_data.update(cpu_freq_dict)
 
-    disk_load_keys = ["disk_load_avg_1min", "disk_load_avg_5min", "disk_load_avg_15min"]
-    disk_load_avg = psutil.getloadavg()
-    disk_load_dict = {k: v for k, v in zip(disk_load_keys, disk_load_avg)}
-    telemetry_data.update(disk_load_dict)
+        disk_load_keys = [
+            "disk_load_avg_1min",
+            "disk_load_avg_5min",
+            "disk_load_avg_15min",
+        ]
+        disk_load_avg = psutil.getloadavg()
+        disk_load_dict = {k: v for k, v in zip(disk_load_keys, disk_load_avg)}
+        telemetry_data.update(disk_load_dict)
 
     virtual_memory_keys = [
         "virtual_memory_total",
@@ -177,7 +193,11 @@ def get_telemetry():
     disk_io_dict = {
         k: v
         for k, v in zip(
-            [k for k in disk_io_keys if k.split("_")[-1] in disk_io_counters._fields],
+            [
+                k
+                for k in disk_io_keys
+                if "_".join(k.split("_")[2:]) in disk_io_counters._fields
+            ],
             disk_io_counters,
         )
     }
@@ -258,7 +278,7 @@ def main():
         start_ts = time.time()
         telemetry_data = get_telemetry()
         print(json.dumps(telemetry_data, indent=4))
-        # print(f"took {time.time()-start_ts:.2f}")
+        print(f"took {time.time()-start_ts:.2f}")
         # send_telemetry(telemetry_data)
         break
         time.sleep(SLEEP_PERIOD)
