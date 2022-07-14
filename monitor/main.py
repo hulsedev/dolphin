@@ -225,6 +225,10 @@ def get_telemetry():
 
     if psutil.LINUX or psutil.WINDOWS or psutil.MACOS or psutil.FREEBSD:
         percent, secsleft, power_plugged = psutil.sensors_battery()
+        if secsleft == psutil.POWER_TIME_UNLIMITED:
+            secsleft = 86400  # set to a high number
+        elif secsleft == psutil.POWER_TIME_UNKNOWN:
+            secsleft = -2
         telemetry_data["sensors_battery_percent"] = percent
         telemetry_data["sensors_battery_secsleft"] = secsleft
         telemetry_data["sensors_battery_power_plugged"] = power_plugged
@@ -236,7 +240,6 @@ def get_platform_info():
     architecture_bits, architecture_linkage = platform.architecture()
     platform_info = {
         "architecture_bits": architecture_bits,
-        "architecture_linkage": architecture_linkage,
         "machine": platform.machine(),
         "platform": platform.platform(),
         "node": platform.node(),
@@ -244,25 +247,33 @@ def get_platform_info():
         "system": platform.system(),
         "system_version": platform.version(),
         "system_release": platform.release(),
-        "win32_edition": platform.win32_edition(),
         "win32_is_iot": platform.win32_is_iot(),
     }
-    win32_ver_keys = [
-        "win32_ver_release",
-        "win32_ver_version",
-        "win32_ver_csd",
-        "win32_ver_ptype",
-    ]
-    win32_ver = {k: v for k, v in zip(win32_ver_keys, platform.win32_ver())}
-    platform_info.update(win32_ver)
+    if architecture_linkage:
+        platform_info["architecture_linkage"] = architecture_linkage
 
-    mac_ver_keys = ["release", "versioninfo", "machine"]
-    mac_ver = {k: v for k, v in zip(mac_ver_keys, platform.mac_ver())}
-    platform_info.update(mac_ver)
-
-    libc_ver_keys = ["libc_lib", "libc_version"]
-    libc_ver = {k: v for k, v in zip(libc_ver_keys, platform.libc_ver())}
-    platform_info.update(libc_ver)
+    # TODO: update script to include additional platform info
+    # if psutil.WINDOWS:
+    #    platform_info["win32_edition"] = platform.win32_edition()
+    #    win32_ver_keys = [
+    #        "win32_ver_release",
+    #        "win32_ver_version",
+    #        "win32_ver_csd",
+    #        "win32_ver_ptype",
+    #    ]
+    #    win32_ver = {k: v for k, v in zip(win32_ver_keys, platform.win32_ver())}
+    #    platform_info.update(win32_ver)
+    #
+    # if psutil.MACOS:
+    #    mac_ver_keys = ["release", "versioninfo", "machine"]
+    #    mac_ver = {k: v for k, v in zip(mac_ver_keys, platform.mac_ver())}
+    #    versioninfo_keys = ["mac_version", "mac_dev_stage", "mac_non_release_version"]
+    #    platform_info.update(mac_ver)
+    #
+    # if psutil.LINUX or psutil.OPENBSD or psutil.FREEBSD:
+    #    libc_ver_keys = ["libc_lib", "libc_version"]
+    #    libc_ver = {k: v for k, v in zip(libc_ver_keys, platform.libc_ver())}
+    #    platform_info.update(libc_ver)
 
     return platform_info
 

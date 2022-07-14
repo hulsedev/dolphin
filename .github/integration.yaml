@@ -1,0 +1,26 @@
+name: Integration tests
+
+on:
+  push:
+    branches:
+      - "main"
+
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  windows-run:
+    name: Run integration on Windows
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: "windows-latest"
+
+  macos-run:
+    name: Run integration on macOS 12
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: "macos-latest"
+
+  ubuntu-run:
+    name: Run integration on Ubuntu
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: "ubuntu-latest"

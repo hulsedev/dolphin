@@ -8,7 +8,7 @@ class Machine(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     architecture_bits = models.CharField(max_length=64)
-    architecture_linkage = models.CharField(max_length=64)
+    architecture_linkage = models.CharField(max_length=64, null=True, default=None)
     machine = models.CharField(max_length=128)
     platform = models.CharField(max_length=128)
     node = models.CharField(max_length=256)
@@ -16,16 +16,16 @@ class Machine(models.Model):
     system = models.CharField(max_length=256)
     system_version = models.CharField(max_length=256)
     system_release = models.CharField(max_length=256)
-    win32_edition = models.CharField(max_length=256)
-    win32_is_iot = models.BooleanField()
-    win32_ver_release = models.CharField(max_length=256)
-    win32_ver_version = models.CharField(max_length=256)
-    win32_ver_csd = models.CharField(max_length=256)
-    win32_ver_ptype = models.CharField(max_length=256)
-    release = models.CharField(max_length=256)
-    versioninfo = models.JSONField()
-    libc_lib = models.CharField(max_length=256)
-    libc_version = models.CharField(max_length=256)
+    win32_edition = models.CharField(max_length=256, null=True, default=None)
+    win32_is_iot = models.BooleanField(null=True, default=None)
+    win32_ver_release = models.CharField(max_length=256, null=True, default=None)
+    win32_ver_version = models.CharField(max_length=256, null=True, default=None)
+    win32_ver_csd = models.CharField(max_length=256, null=True, default=None)
+    win32_ver_ptype = models.CharField(max_length=256, null=True, default=None)
+    release = models.CharField(max_length=256, null=True, default=None)
+    versioninfo = models.JSONField(null=True, default=dict)
+    libc_lib = models.CharField(max_length=256, null=True, default=None)
+    libc_version = models.CharField(max_length=256, null=True, default=None)
 
     def __str__(self):
         return self.machine_id
@@ -41,20 +41,22 @@ class Log(models.Model):
     dolphin_version = models.CharField(max_length=10)
     date_measured = models.DateTimeField()
     boot_time = models.FloatField()
-    cpu_times = models.JSONField()
+    cpu_times = models.JSONField(null=True, default=dict)
     cpu_percent_global = models.FloatField()
-    cpu_percent = models.JSONField()
-    cpu_times_percent = models.JSONField()
+    cpu_percent = models.JSONField(null=True, default=dict)
+    cpu_times_percent = models.JSONField(null=True, default=dict)
     cpu_physical_count = models.IntegerField()
     cpu_logical_count = models.IntegerField()
-    cpu_freq = models.JSONField()
-    disk_partitions = models.JSONField()
-    all_disk_partitions = models.JSONField()
-    disk_io_counters_per_disk = models.JSONField()
-    network_io_counters_per_nic = models.JSONField()
+    cpu_freq = models.JSONField(null=True, default=dict)
+    disk_partitions = models.JSONField(null=True, default=dict)
+    all_disk_partitions = models.JSONField(null=True, default=dict)
+    disk_io_counters_per_disk = models.JSONField(null=True, default=dict)
+    network_io_counters_per_nic = models.JSONField(null=True, default=dict)
 
     # platform data fields
-    machine = models.ForeignKey(Machine, on_delete=models.CASCADE, related_name="logs")
+    machine_id = models.ForeignKey(
+        Machine, on_delete=models.CASCADE, related_name="logs"
+    )
 
     # cpu times data fields
     cpu_times_user = models.FloatField()
@@ -127,8 +129,8 @@ class Log(models.Model):
     sensors_battery_percent = models.FloatField(null=True, default=None)
     sensors_battery_secsleft = models.FloatField(null=True, default=None)
     sensors_battery_power_plugged = models.BooleanField(null=True, default=None)
-    sensors_temperatures = models.JSONField(null=True, default=None)
-    sensors_fans = models.JSONField(null=True, default=None)
+    sensors_temperatures = models.JSONField(null=True, default=dict)
+    sensors_fans = models.JSONField(null=True, default=dict)
 
     def __str__(self):
         return self.date_measured
