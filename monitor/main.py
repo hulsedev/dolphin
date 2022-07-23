@@ -10,7 +10,7 @@ import psutil
 import requests
 
 
-API_ENDPOINT = "https://dolphin.hulse.app/log/"
+API_ENDPOINT = "http://127.0.0.1:8000/log/"  # "https://dolphin.hulse.app/log/"
 SLEEP_PERIOD = 10
 UUID_DIRPATH = Path(user_data_dir("Dolphin", "Hulse"))
 UUID_FILENAME = ".uuid"
@@ -278,19 +278,20 @@ def get_platform_info():
     return platform_info
 
 
-def send_telemetry(telemetry_data):
-    resp = requests.post(API_ENDPOINT, json=telemetry_data)
+def send_telemetry(telemetry_data, session):
+    resp = session.post(API_ENDPOINT, json=telemetry_data)
+    assert resp.status_code == 200
 
 
 def main():
+    session = requests.Session()
     while True:
-        start_ts = time.time()
-        telemetry_data = get_telemetry()
-        print(json.dumps(telemetry_data, indent=4))
-        print(f"took {time.time()-start_ts:.2f}")
-        # send_telemetry(telemetry_data)
-        break
-        time.sleep(SLEEP_PERIOD)
+        try:
+            telemetry_data = get_telemetry()
+            send_telemetry(telemetry_data, session)
+            time.sleep(SLEEP_PERIOD)
+        except Exception as e:
+            pass
 
 
 if __name__ == "__main__":

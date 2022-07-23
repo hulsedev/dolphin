@@ -28,7 +28,7 @@ class Machine(models.Model):
     libc_version = models.CharField(max_length=256, null=True, default=None)
 
     def __str__(self):
-        return self.machine_id
+        return str(self.machine_id)
 
 
 class Log(models.Model):
@@ -133,7 +133,7 @@ class Log(models.Model):
     sensors_fans = models.JSONField(null=True, default=dict)
 
     def __str__(self):
-        return self.date_measured
+        return str(self.date_measured)
 
     class Meta:
         ordering = ["date_created"]

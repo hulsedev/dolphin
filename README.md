@@ -13,3 +13,13 @@ ALTER ROLE postgres SET timezone TO 'UTC';
 GRANT ALL PRIVILEGES ON DATABASE dolphin TO postgres;
 ```
 > Find more info about setting postgresql with django [here](https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-20-04).
+
+## TODO
+- [ ] setup pyinstaller script to generate macos, linux & windows distribs
+- [ ] add pyupdater logic to auto-update script
+- [ ] deploy to heroku
+- [ ] add process backgrounding for executables
+- [ ] add code-signing logic for macos, windows, linux
+- [ ] add release to s3 bucket on build
+- [ ] package logic into CI for automatic build and release
+- [ ] add grafana logging of metrics
